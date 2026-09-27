@@ -1,0 +1,34 @@
+/*
+Theme Name: Pejvak Hesab | پژواک حساب
+Theme URI: https://pejvakhesab.ir/
+Author: OneCode | وان کد
+Author URI: https://onecode.ir/
+Description: قالب اختصاصی پژواک حساب — نرم‌افزارهای حسابداری، تجهیزات فروشگاهی و راهکارهای یکپارچه فروش. کاملاً راست‌چین، فروشگاهی و آماده ووکامرس.
+Version: 1.2.0
+Requires at least: 6.0
+Tested up to: 6.8
+Requires PHP: 7.4
+License: GNU General Public License v2 or later
+License URI: http://www.gnu.org/licenses/gpl-2.0.html
+Text Domain: pejvak-hesab
+Tags: rtl-language-support, e-commerce, custom-menu, featured-images, threaded-comments
+*/
+/* استایل اصلی قالب در assets/css بارگذاری می‌شود. این فایل فقط برای معرفی قالب + ترفندهای وردپرسی است. */
+.aligncenter{clear:both;display:block;margin-inline:auto}
+.alignright{float:right;margin:0 0 1em 1em}
+.alignleft{float:left;margin:0 1em 1em 0}
+.wp-caption{max-width:100%;border:1px solid #E1E9ED;border-radius:12px;padding:8px;background:#F4F7F9}
+.wp-caption-text{font-size:12.5px;color:#6B8087;text-align:center;padding:6px 0 2px}
+.gallery{grid-template-columns:repeat(3,1fr);gap:12px;margin:18px 0}
+.gallery img{border-radius:12px}
+.prose img{border-radius:14px}
+.comment-list,.comment-list .children{list-style:none}
+.ph-pagination{display:flex;gap:8px;justify-content:center;margin-top:40px}
+.ph-pagination .page-numbers{min-width:42px;height:42px;border-radius:10px;border:1px solid #E1E9ED;display:inline-flex;align-items:center;justify-content:center;font-weight:700;background:#fff}
+.ph-pagination .current{background:#00798C;border-color:#00798C;color:#fff}
+.screen-reader-text{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+.custom-logo{max-height:46px;width:auto}
+.main-nav ul{display:flex;align-items:center;gap:4px;margin-inline-start:8px;flex:1}
+.main-nav ul a{padding:12px 13px;font-size:14px;font-weight:700;color:var(--ink);border-radius:8px;white-space:nowrap}
+.main-nav ul a:hover{color:var(--brand)}
+@media(max-width:1180px){.main-nav{display:none}}

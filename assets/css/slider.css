@@ -1,0 +1,173 @@
+/* ============================================================
+   Pejvak Hesab — Slider v2.0.0
+   راه‌حل قطعی: کارت‌های با عرض ثابت + دکمه‌های scrollBy
+   ============================================================ */
+
+.ph-slider {
+  --ph-gap: 24px;
+  --ph-per-view: 3;
+  position: relative;
+  padding: 0 60px;
+}
+
+/* دکمه‌ها */
+.ph-slider__nav {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: #fff;
+  border: 2px solid #E1E9ED;
+  color: #0D242D;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 100;
+  padding: 0;
+  margin: 0;
+  box-shadow: 0 6px 20px rgba(7, 36, 45, .18);
+  transition: all .2s ease;
+}
+
+.ph-slider__nav:hover {
+  background: #00798C;
+  border-color: #00798C;
+  color: #fff;
+}
+
+.ph-slider__nav:active {
+  transform: translateY(-50%) scale(.95);
+}
+
+.ph-slider__nav[disabled] {
+  opacity: .3;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+.ph-slider__nav svg,
+.ph-slider__nav [data-icon],
+.ph-slider__nav i {
+  width: 22px;
+  height: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+  line-height: 1;
+}
+
+.ph-slider__nav--prev { left: 0; }
+.ph-slider__nav--next { right: 0; }
+
+[dir="rtl"] .ph-slider__nav--prev { left: auto; right: 0; }
+[dir="rtl"] .ph-slider__nav--next { right: auto; left: 0; }
+
+/* viewport */
+.ph-slider__viewport {
+  overflow: hidden;
+  padding: 8px 0;
+}
+
+/* track — اینجا اسکرول واقعی اتفاق می‌افته */
+.ph-slider__track {
+  display: flex;
+  flex-wrap: nowrap;
+  gap: var(--ph-gap);
+  overflow-x: auto;
+  overflow-y: hidden;
+  /* حذف کامل اسنپ و رفتار نرم برای کنترل کامل JS */
+  scroll-snap-type: none;
+  scroll-behavior: auto;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  -webkit-overflow-scrolling: touch;
+}
+
+.ph-slider__track::-webkit-scrollbar {
+  display: none;
+}
+
+/* هر کارت — عرض دقیق با flex-basis */
+.ph-slider__track > * {
+  flex: 0 0 auto;
+  width: calc((100% - (var(--ph-gap) * (var(--ph-per-view) - 1))) / var(--ph-per-view));
+  max-width: calc((100% - (var(--ph-gap) * (var(--ph-per-view) - 1))) / var(--ph-per-view));
+  min-width: 0;
+  box-sizing: border-box;
+}
+
+/* تبلت: ۲ کارت */
+@media (max-width: 1079px) {
+  .ph-slider { --ph-per-view: 2; --ph-gap: 20px; padding: 0 56px; }
+}
+
+/* موبایل: ۱ کارت */
+@media (max-width: 679px) {
+  .ph-slider { --ph-per-view: 1; --ph-gap: 16px; padding: 0 52px; }
+  .ph-slider__nav { width: 40px; height: 40px; }
+  .ph-slider__nav svg,
+  .ph-slider__nav [data-icon],
+  .ph-slider__nav i { width: 18px; height: 18px; font-size: 18px; }
+}
+
+@media (max-width: 480px) {
+  .ph-slider { padding: 0 48px; }
+  .ph-slider__nav { width: 36px; height: 36px; }
+}
+
+/* نقطه‌ها */
+.ph-slider__dots {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  margin-top: 24px;
+  min-height: 12px;
+}
+
+.ph-slider__dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #CBD6DB;
+  border: 0;
+  cursor: pointer;
+  padding: 0;
+  transition: all .25s;
+}
+
+.ph-slider__dot.active {
+  background: #00798C;
+  width: 28px;
+  border-radius: 5px;
+}
+
+/* تم تیره */
+.ph-slider--dark .ph-slider__nav {
+  background: rgba(255, 255, 255, .15);
+  border-color: rgba(255, 255, 255, .35);
+  color: #fff;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+.ph-slider--dark .ph-slider__nav:hover {
+  background: #F0B429;
+  border-color: #F0B429;
+  color: #2A2003;
+}
+.ph-slider--dark .ph-slider__dot { background: rgba(255, 255, 255, .3); }
+.ph-slider--dark .ph-slider__dot.active { background: #F0B429; }
+
+/* حالت غیرفعال — وقتی کارت‌ها کمتر از حد نمایشه */
+.ph-slider.is-disabled { padding: 0; }
+.ph-slider.is-disabled .ph-slider__viewport { overflow: visible; }
+.ph-slider.is-disabled .ph-slider__track {
+  overflow: visible;
+  flex-wrap: wrap;
+}
+.ph-slider.is-disabled .ph-slider__nav,
+.ph-slider.is-disabled .ph-slider__dots { display: none !important; }
