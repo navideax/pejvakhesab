@@ -273,6 +273,87 @@ function ph_ajax_update_profile() {
     wp_send_json_success(['name' => get_userdata($uid)->display_name]);
 }
 
+/* ---------- عضویت (داخل قالب، بدون رفتن به wp-login) ---------- */
+add_action('wp_ajax_ph_register', 'ph_ajax_register');
+add_action('wp_ajax_nopriv_ph_register', 'ph_ajax_register');
+function ph_ajax_register() {
+    if (!ph_verify_ajax()) wp_send_json_error('nonce');
+    if (!get_option('users_can_register')) wp_send_json_error('reg-off');
+    /* محدودیت IP — جلوگیری از اسپم ثبت‌نام */
+    $ip_key = 'ph_reg_ip_' . md5((string) ($_SERVER['REMOTE_ADDR'] ?? '0'));
+    if ((int) get_transient($ip_key) >= 5) wp_send_json_error('too-many');
+    set_transient($ip_key, (int) get_transient($ip_key) + 1, HOUR_IN_SECONDS);
+
+    $name = sanitize_text_field($_POST['name'] ?? '');
+    $email = sanitize_email($_POST['email'] ?? '');
+    $mobile_raw = trim((string) ($_POST['mobile'] ?? ''));
+    $mobile = ph_mobile_norm($mobile_raw);
+    $pass = (string) ($_POST['pass'] ?? '');
+    if (mb_strlen($name) < 3) wp_send_json_error('bad-name');
+    if (!is_email($email)) wp_send_json_error('bad-email');
+    if (mb_strlen($pass) < 6) wp_send_json_error('weak-pass');
+    if ($mobile_raw !== '' && $mobile === '') wp_send_json_error('bad-mobile');
+    if (username_exists($email) || email_exists($email)) wp_send_json_error('email-exists');
+    if ($mobile !== '' && get_users(['meta_key' => 'ph_phone', 'meta_value' => $mobile, 'number' => 1, 'fields' => 'ID'])) {
+        wp_send_json_error('mobile-exists');
+    }
+
+    /* نام کاربری = ایمیل */
+    $uid = wp_create_user($email, $pass, $email);
+    if (is_wp_error($uid)) wp_send_json_error('db');
+    wp_update_user(['ID' => $uid, 'display_name' => wp_slash($name)]);
+    if ($mobile !== '') update_user_meta($uid, 'ph_phone', $mobile);
+    wp_set_current_user($uid);
+    wp_set_auth_cookie($uid, true);
+    wp_send_json_success(['redirect' => ph_url('account')]);
+}
+
+/* ---------- فراموشی رمز عبور (لینک بازنشانی به صفحه حساب کاربری خود قالب برمی‌گردد) ---------- */
+add_action('wp_ajax_ph_forgot', 'ph_ajax_forgot');
+add_action('wp_ajax_nopriv_ph_forgot', 'ph_ajax_forgot');
+function ph_ajax_forgot() {
+    if (!ph_verify_ajax()) wp_send_json_error('nonce');
+    /* محدودیت IP */
+    $ip_key = 'ph_forgot_ip_' . md5((string) ($_SERVER['REMOTE_ADDR'] ?? '0'));
+    if ((int) get_transient($ip_key) >= 5) wp_send_json_error('too-many');
+    set_transient($ip_key, (int) get_transient($ip_key) + 1, HOUR_IN_SECONDS);
+
+    $login = trim(sanitize_text_field(wp_unslash($_POST['login'] ?? '')));
+    if ($login === '') wp_send_json_error('bad-login');
+    $user = is_email($login) ? (get_user_by('email', $login) ?: get_user_by('login', $login)) : (get_user_by('login', $login) ?: get_user_by('email', $login));
+    if ($user) {
+        $key = get_password_reset_key($user);
+        if (!is_wp_error($key)) {
+            $link = add_query_arg(['rp_key' => $key, 'rp_login' => rawurlencode($user->user_login)], ph_url('account'));
+            $name = $user->display_name ?: $user->user_login;
+            $body = '<p>سلام ' . esc_html($name) . '،</p>'
+                . '<p>برای تنظیم رمز عبور جدید حساب «پژواک حساب» روی لینک زیر کلیک کنید:</p>'
+                . '<p><a href="' . esc_url($link) . '"><strong>تنظیم رمز عبور جدید</strong></a></p>'
+                . '<p>اگر دکمه کار نکرد، این آدرس را در مرورگر خود باز کنید:<br><span dir="ltr">' . esc_html($link) . '</span></p>'
+                . '<p style="color:#666;font-size:13px">این لینک ۲۴ ساعت اعتبار دارد. اگر شما این درخواست را نداده‌اید، این ایمیل را نادیده بگیرید.</p>';
+            wp_mail($user->user_email, 'بازنشانی رمز عبور — پژواک حساب', $body, ['Content-Type: text/html; charset=UTF-8']);
+        }
+    }
+    /* پیام عمومی — مشخص نمی‌شود کدام ایمیل/نام کاربری در سیستم وجود دارد */
+    wp_send_json_success(['msg' => 'اگر این ایمیل یا نام کاربری در سایت ثبت شده باشد، لینک تنظیم رمز جدید برای شما ارسال شد.']);
+}
+
+/* ---------- تعیین رمز جدید (با کلید بازنشانی) ---------- */
+add_action('wp_ajax_ph_reset', 'ph_ajax_reset');
+add_action('wp_ajax_nopriv_ph_reset', 'ph_ajax_reset');
+function ph_ajax_reset() {
+    if (!ph_verify_ajax()) wp_send_json_error('nonce');
+    $key = sanitize_text_field(wp_unslash($_POST['key'] ?? ''));
+    $login = sanitize_user(wp_unslash($_POST['login'] ?? ''), true);
+    $pass = (string) ($_POST['pass'] ?? '');
+    if ($key === '' || $login === '') wp_send_json_error('bad-key');
+    if (mb_strlen($pass) < 6) wp_send_json_error('weak-pass');
+    $user = check_password_reset_key($key, $login);
+    if (is_wp_error($user)) wp_send_json_error($user->get_error_code() === 'expired_key' ? 'expired' : 'bad-key');
+    reset_password($user, $pass);
+    wp_send_json_success(['msg' => 'رمز عبور شما با موفقیت تغییر کرد؛ اکنون وارد شوید.']);
+}
+
 /* ---------- ورود پیامکی (ملی پیامک) ---------- */
 add_action('wp_ajax_ph_otp_send', 'ph_ajax_otp_send');
 add_action('wp_ajax_nopriv_ph_otp_send', 'ph_ajax_otp_send');

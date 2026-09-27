@@ -5,7 +5,7 @@
  */
 defined('ABSPATH') || exit;
 
-define('PH_VER', '1.3.0');
+define('PH_VER', '1.4.0');
 define('PH_SEED_VER', '1.1');
 define('PH_URI', get_template_directory_uri());
 define('PH_DIR', get_template_directory());
@@ -127,6 +127,7 @@ function ph_build_links() {
     foreach ($ids as $id) $L['software'][get_post_field('post_name', $id)] = get_permalink($id);
     $ids = get_posts(['post_type' => 'post', 'numberposts' => 60, 'post_status' => 'publish', 'fields' => 'ids']);
     foreach ($ids as $id) $L['article'][get_post_field('post_name', $id)] = get_permalink($id);
+    set_transient('ph_links_cache', $L, 12 * HOUR_IN_SECONDS);
     return $L;
 }
 

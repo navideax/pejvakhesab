@@ -571,8 +571,6 @@ function ordersTableHTML(orders) {
 /* ---------- account (WordPress: real user, orders, addresses) ---------- */
 function initOtpLogin() {
   if (!document.getElementById('otpBox')) return;
-  $('#otpToPw')?.addEventListener('click', () => { $('#otpBox').style.display = 'none'; $('#pwBox').style.display = ''; });
-  $('#pwToOtp')?.addEventListener('click', () => { $('#pwBox').style.display = 'none'; $('#otpBox').style.display = ''; });
   const fa2en = v => String(v || '').replace(/[۰-۹]/g, d => '۰۱۲۳۴۵۶۷۸۹'.indexOf(d)).replace(/[^0-9]/g, '');
   const msg = k => ({ 'bad-mobile': 'شماره موبایل معتبر نیست', 'cooldown': 'کمی صبر کنید و دوباره تلاش کنید', 'too-many': 'تعداد تلاش‌ها زیاد شد؛ یک ساعت بعد تلاش کنید', 'expired': 'کد منقضی شد؛ کد جدید بگیرید', 'wrong': 'کد واردشده صحیح نیست', 'bad-code': 'کد را کامل وارد کنید', 'sms-off': 'ورود پیامکی فعال نیست', 'reg-off': 'ثبت‌نام در حال حاضر بسته است', 'nonce': 'خطای امنیتی؛ صفحه را رفرش کنید' }[k] || 'خطا؛ لطفاً دوباره تلاش کنید');
   let timer = null;
@@ -600,9 +598,70 @@ function initOtpLogin() {
     phAjax('ph_otp_verify', { mobile: fa2en($('#otpMobile').value), code }).then(res => { btn.disabled = false; if (res && res.success) { showToast('خوش آمدید', 'success'); location.href = (res.data && res.data.redirect) || location.pathname; } else showToast(msg(res && res.data), 'error'); }).catch(() => { btn.disabled = false; showToast('خطا در ارتباط با سرور', 'error'); });
   });
 }
+/* ---------- عضویت + فراموشی رمز (همه داخل قالب؛ بدون رفتن به wp-login) ---------- */
+function initAuthUI() {
+  const panes = { login: $('#authLoginPane'), reg: $('#authRegPane'), forgot: $('#authForgotPane'), reset: $('#authResetPane') };
+  if (!panes.login) return;
+  const tabs = $('#authTabs');
+  const setTab = id => tabs?.querySelectorAll('button').forEach(b => b.classList.toggle('active', b.id === id));
+  const show = k => {
+    Object.keys(panes).forEach(x => { if (panes[x]) panes[x].style.display = x === k ? '' : 'none'; });
+    if (tabs) tabs.style.display = k === 'reset' ? 'none' : '';
+    setTab(k === 'reg' ? 'authTabReg' : 'authTabLogin');
+  };
+  /* لینک بازنشانی از ایمیل → مستقیم فرم رمز جدید باز شود */
+  if (panes.reset) show('reset');
+  $('#authTabLogin')?.addEventListener('click', () => show('login'));
+  $('#authTabReg')?.addEventListener('click', () => show('reg'));
+  $('#gotoForgot')?.addEventListener('click', () => show('forgot'));
+  $('#backToLogin1')?.addEventListener('click', () => show('login'));
+  $('#backToLogin2')?.addEventListener('click', () => show('login'));
+  /* جابه‌جایی ورود پیامکی ↔ رمز عبور */
+  $('#otpToPw')?.addEventListener('click', () => { $('#otpBox').style.display = 'none'; $('#pwBox').style.display = ''; });
+  $('#pwToOtp')?.addEventListener('click', () => { $('#pwBox').style.display = 'none'; $('#otpBox').style.display = ''; });
+  const err = k => ({ 'nonce': 'خطای امنیتی؛ صفحه را رفرش کنید', 'too-many': 'تعداد تلاش‌ها زیاد است؛ کمی بعد تلاش کنید', 'reg-off': 'ثبت‌نام در حال حاضر بسته است', 'bad-name': 'نام و نام خانوادگی را کامل وارد کنید', 'bad-email': 'ایمیل معتبر وارد کنید', 'email-exists': 'این ایمیل قبلاً ثبت شده است', 'bad-mobile': 'شماره موبایل معتبر نیست', 'mobile-exists': 'این شماره قبلاً ثبت شده است', 'weak-pass': 'رمز عبور باید حداقل ۶ کاراکتر باشد', 'bad-login': 'ایمیل یا نام کاربری را وارد کنید', 'bad-key': 'لینک بازنشانی معتبر نیست؛ دوباره درخواست دهید', 'expired': 'لینک بازنشانی منقضی شده؛ دوباره درخواست دهید', 'db': 'خطا در ایجاد حساب؛ دوباره تلاش کنید' }[k] || 'خطا؛ لطفاً دوباره تلاش کنید');
+  /* عضویت */
+  $('#regForm')?.addEventListener('submit', e => {
+    e.preventDefault();
+    const name = $('#regName').value.trim(), email = $('#regEmail').value.trim(), mobile = $('#regMobile').value.trim(), pass = $('#regPass').value;
+    if (name.length < 3) { showToast('نام و نام خانوادگی را کامل وارد کنید', 'error'); return; }
+    if (pass.length < 6) { showToast('رمز عبور باید حداقل ۶ کاراکتر باشد', 'error'); return; }
+    const btn = e.target.querySelector('button[type=submit]'); btn.disabled = true;
+    phAjax('ph_register', { name, email, mobile, pass }).then(res => {
+      btn.disabled = false;
+      if (res && res.success) { showToast('حساب شما ساخته شد؛ خوش آمدید', 'success'); location.href = (res.data && res.data.redirect) || location.pathname; }
+      else showToast(err(res && res.data), 'error');
+    }).catch(() => { btn.disabled = false; showToast('خطا در ارتباط با سرور', 'error'); });
+  });
+  /* فراموشی رمز */
+  $('#forgotForm')?.addEventListener('submit', e => {
+    e.preventDefault();
+    const login = $('#fpLogin').value.trim();
+    if (!login) { showToast('ایمیل یا نام کاربری را وارد کنید', 'error'); return; }
+    const btn = e.target.querySelector('button[type=submit]'); btn.disabled = true;
+    phAjax('ph_forgot', { login }).then(res => {
+      btn.disabled = false;
+      showToast((res && res.success && res.data && res.data.msg) || err(res && res.data), res && res.success ? 'success' : 'error');
+      if (res && res.success) { e.target.reset(); show('login'); }
+    }).catch(() => { btn.disabled = false; showToast('خطا در ارتباط با سرور', 'error'); });
+  });
+  /* رمز جدید با کلید بازنشانی */
+  $('#resetForm')?.addEventListener('submit', e => {
+    e.preventDefault();
+    const p1 = $('#rpPass').value, p2 = $('#rpPass2').value;
+    if (p1.length < 6) { showToast('رمز عبور باید حداقل ۶ کاراکتر باشد', 'error'); return; }
+    if (p1 !== p2) { showToast('تکرار رمز عبور مطابقت ندارد', 'error'); return; }
+    const btn = e.target.querySelector('button[type=submit]'); btn.disabled = true;
+    phAjax('ph_reset', { key: $('#rpKey').value, login: $('#rpLogin').value, pass: p1 }).then(res => {
+      btn.disabled = false;
+      if (res && res.success) { showToast('رمز عبور شما تغییر کرد؛ اکنون وارد شوید', 'success'); show('login'); }
+      else showToast(err(res && res.data), 'error');
+    }).catch(() => { btn.disabled = false; showToast('خطا در ارتباط با سرور', 'error'); });
+  });
+}
 function initAccountWP() {
   const U = (window.PH_WP && PH_WP.user) || {};
-  if (!U.logged) { $('#accGuest').style.display = ''; const m = $('#accMain'); if (m) m.style.display = 'none'; initOtpLogin(); return; }
+  if (!U.logged) { $('#accGuest').style.display = ''; const m = $('#accMain'); if (m) m.style.display = 'none'; initOtpLogin(); initAuthUI(); return; }
   $('#accGuest').style.display = 'none'; $('#accMain').style.display = '';
   if (U.name) $('#accUserName').textContent = U.name;
   const wish = store.get('wish', []).map(prod).filter(Boolean);
