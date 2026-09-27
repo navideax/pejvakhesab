@@ -7,7 +7,7 @@ defined('ABSPATH') || exit;
 get_header();
 ?>
 <main>
-<div class="page-hero"><div class="container"><div class="breadcrumb-lite"><a href="<?php echo home_url('/'); ?>">خانه</a><span>/</span><span><?php the_title(); ?></span></div><h1 id="shopTitle"><?php the_title(); ?></h1><p id="shopDesc"><?php echo esc_html(get_the_excerpt() ?: 'تجهیزات اصلی با ضمانت شرکتی، تست سازگاری با نرم‌افزار شما و پشتیبانی واقعی'); ?></p></div></div>
+<div class="page-hero"><div class="container"><div class="breadcrumb-lite"><a href="<?php echo esc_url(home_url('/')); ?>">خانه</a><span>/</span><span><?php the_title(); ?></span></div><h1 id="shopTitle"><?php the_title(); ?></h1><p id="shopDesc"><?php echo esc_html(get_the_excerpt() ?: 'تجهیزات اصلی با ضمانت شرکتی، تست سازگاری با نرم‌افزار شما و پشتیبانی واقعی'); ?></p></div></div>
 <div class="section"><div class="container">
   <div class="shop-cat-chips"><?php $ph_cur = isset($_GET['pcat']) ? sanitize_key($_GET['pcat']) : ''; ?><a href="<?php echo esc_url(ph_url('shop')); ?>" data-cat="" class="<?php echo $ph_cur ? '' : 'active'; ?>">همه محصولات</a><?php $ph_terms = get_terms(['taxonomy' => 'ph_cat', 'hide_empty' => false]); if ($ph_terms && !is_wp_error($ph_terms)) foreach ($ph_terms as $pt) echo '<a href="' . esc_url(ph_url('product-cat')) .  esc_attr($pt->slug) . '" data-cat="' . esc_attr($pt->slug) . '" class="' . ($ph_cur === $pt->slug ? 'active' : '') . '">' . esc_html($pt->name) . '</a>'; ?></div>
   <div class="shop-layout">

@@ -95,7 +95,10 @@ function ph_ajax_submit_review() {
     wp_send_json_success(['id' => $cid]);
 }
 
-/* ---------- ثبت سفارش ---------- */
+/* ---------- ثبت سفارش ----------
+ * مبلغ، قیمت اقلام، هزینه ارسال و تخفیف همگی سمت سرور محاسبه می‌شوند؛
+ * مقادیر ارسالی کلاینت هرگز مبنای پرداخت نیستند.
+ */
 add_action('wp_ajax_ph_create_order', 'ph_ajax_create_order');
 add_action('wp_ajax_nopriv_ph_create_order', 'ph_ajax_create_order');
 function ph_ajax_create_order() {
@@ -109,13 +112,47 @@ function ph_ajax_create_order() {
     $ship = sanitize_text_field($_POST['ship'] ?? '');
     $pay = sanitize_text_field($_POST['pay'] ?? '');
     $note = sanitize_textarea_field($_POST['note'] ?? '');
-    $items = json_decode(stripslashes($_POST['items'] ?? '[]'), true) ?: [];
-    $total = (int) ($_POST['total'] ?? 0);
-    if (mb_strlen($name) < 3 || mb_strlen($phone) < 10 || !$items) wp_send_json_error('validation');
+    $items_in = json_decode(stripslashes($_POST['items'] ?? '[]'), true) ?: [];
+    if (mb_strlen($name) < 3 || mb_strlen($phone) < 10 || !$items_in) wp_send_json_error('validation');
+
+    /* --- قیمت اقلام فقط از دیتابیس (متای _ph_price) --- */
     $lines = [];
-    foreach (array_slice($items, 0, 50) as $it) {
-        $lines[] = ['id' => sanitize_key($it['id'] ?? ''), 'q' => max(1, (int) ($it['q'] ?? 1)), 'price' => max(0, (int) ($it['price'] ?? 0))];
+    $subtotal = 0;
+    foreach (array_slice($items_in, 0, 50) as $it) {
+        $slug = sanitize_key($it['id'] ?? '');
+        $qty = max(1, min(99, (int) ($it['q'] ?? 1)));
+        if ($slug === '') continue;
+        $p = get_page_by_path($slug, OBJECT, 'ph_product');
+        if (!$p || $p->post_status !== 'publish') continue;
+        $price = max(0, (int) get_post_meta($p->ID, '_ph_price', true));
+        $lines[] = ['id' => $slug, 'q' => $qty, 'price' => $price];
+        $subtotal += $price * $qty;
     }
+    if (!$lines) wp_send_json_error('validation');
+
+    /* --- هزینه ارسال سمت سرور --- */
+    $ship_code = sanitize_key($_POST['ship_code'] ?? '');
+    if (!in_array($ship_code, ['std', 'exp', 'pick'], true)) $ship_code = 'std';
+    $scfg = ph_ship_config();
+    if ($ship_code === 'std') {
+        $ship_cost = ($scfg['freeOver'] > 0 && $subtotal >= $scfg['freeOver']) ? 0 : (int) $scfg['std'];
+    } elseif ($ship_code === 'exp') {
+        $ship_cost = (int) $scfg['exp'];
+    } else {
+        $ship_cost = 0;
+    }
+
+    /* --- کد تخفیف سمت سرور --- */
+    $coupon_in = strtoupper(trim(sanitize_text_field($_POST['coupon'] ?? '')));
+    $coupon_off = ($coupon_in !== '' && $coupon_in === strtoupper(trim((string) ph_opt('ph_coupon_code', '')))) ? max(0, (int) ph_opt('ph_coupon_off', 0)) : 0;
+    $discount = min($subtotal, (int) round($subtotal * $coupon_off / 100));
+    $total = max(0, $subtotal + $ship_cost - $discount);
+
+    /* --- پیش‌شرط‌های پرداخت آنلاین قبل از ساخت سفارش (بدون سفارش یتیم) --- */
+    $go_online = (sanitize_key($_POST['pay_code'] ?? '') === 'online');
+    if ($go_online && !ph_zarin_enabled()) wp_send_json_error('درگاه پرداخت آنلاین فعال نیست');
+    if ($go_online && $total < 1000) wp_send_json_error('مبلغ سفارش برای پرداخت آنلاین کافی نیست');
+
     $id = wp_insert_post(['post_type' => 'ph_order', 'post_title' => 'سفارش جدید — ' . $name, 'post_status' => 'publish']);
     if (!$id || is_wp_error($id)) wp_send_json_error('db');
     $code = 'PH-' . (100000 + $id);
@@ -128,17 +165,19 @@ function ph_ajax_create_order() {
     update_post_meta($id, '_ph_addr', $addr);
     update_post_meta($id, '_ph_postcode', $postcode);
     update_post_meta($id, '_ph_ship', $ship);
+    update_post_meta($id, '_ph_ship_code', $ship_code);
     update_post_meta($id, '_ph_pay', $pay);
     update_post_meta($id, '_ph_note', $note);
+    /* شماره کاربر فقط وقتی ذخیره می‌شود که قبلاً شماره‌ای ندارد (جلوگیری از دستکاری جهت دیدن سفارش دیگران) */
+    if (is_user_logged_in() && $phone && !get_user_meta(get_current_user_id(), 'ph_phone', true)) {
+        update_user_meta(get_current_user_id(), 'ph_phone', $phone);
+    }
     update_post_meta($id, '_ph_user_id', get_current_user_id());
-    if (is_user_logged_in() && $phone) update_user_meta(get_current_user_id(), 'ph_phone', $phone);
     update_post_meta($id, '_ph_items', wp_json_encode($lines, JSON_UNESCAPED_UNICODE));
+    update_post_meta($id, '_ph_subtotal', $subtotal);
+    update_post_meta($id, '_ph_ship_cost', $ship_cost);
+    update_post_meta($id, '_ph_discount', $discount);
     update_post_meta($id, '_ph_total', $total);
-    $pay_code = sanitize_key($_POST['pay_code'] ?? '');
-    update_post_meta($id, '_ph_pay_code', $pay_code);
-    $go_online = ($pay_code === 'online');
-    if ($go_online && !ph_zarin_enabled()) wp_send_json_error('درگاه پرداخت آنلاین فعال نیست');
-    if ($go_online && $total < 1000) wp_send_json_error('مبلغ سفارش برای پرداخت آنلاین کافی نیست');
     update_post_meta($id, '_ph_status', $go_online ? 'در انتظار پرداخت' : 'در حال پردازش');
     if ($go_online) {
         $callback = add_query_arg('action', 'ph_payback', admin_url('admin-post.php'));
@@ -180,9 +219,13 @@ add_action('wp_ajax_ph_my_orders', 'ph_ajax_my_orders');
 function ph_ajax_my_orders() {
     if (!ph_verify_ajax() || !is_user_logged_in()) wp_send_json_error('auth');
     $uid = get_current_user_id();
+    $mq = [['key' => '_ph_user_id', 'value' => $uid]];
+    /* تطبیق با شماره موبایل فقط وقتی مجاز است که کاربر همان شماره را با کد پیامکی تأیید کرده باشد */
     $phone = get_user_meta($uid, 'ph_phone', true);
-    $orders = get_posts(['post_type' => 'ph_order', 'numberposts' => 50, 'post_status' => 'publish',
-        'meta_query' => ['relation' => 'OR', ['key' => '_ph_user_id', 'value' => $uid], ['key' => '_ph_phone', 'value' => $phone ?: '::none::']]]);
+    if ($phone && get_user_meta($uid, 'ph_phone_verified', true) === '1') {
+        $mq[] = ['key' => '_ph_phone', 'value' => $phone];
+    }
+    $orders = get_posts(['post_type' => 'ph_order', 'numberposts' => 50, 'post_status' => 'publish', 'meta_query' => ['relation' => 'OR', $mq]]);
     $out = [];
     foreach ($orders as $o) {
         $items = json_decode(get_post_meta($o->ID, '_ph_items', true), true) ?: [];
@@ -257,12 +300,13 @@ function ph_ajax_otp_verify() {
         if (!get_option('users_can_register')) wp_send_json_error('reg-off');
         $uid = wp_create_user($mobile, wp_generate_password(16, false), '');
         if (is_wp_error($uid)) wp_send_json_error($uid->get_error_message());
-        update_user_meta($uid, 'ph_phone', $mobile);
         wp_update_user(['ID' => $uid, 'display_name' => $mobile]);
     } else {
         $uid = $user->ID;
-        if (!get_user_meta($uid, 'ph_phone', true)) update_user_meta($uid, 'ph_phone', $mobile);
     }
+    /* شماره‌ای که با کد پیامکی تأیید شده است — مبنای مجاز تطبیق سفارش‌ها */
+    update_user_meta($uid, 'ph_phone', $mobile);
+    update_user_meta($uid, 'ph_phone_verified', '1');
     wp_set_current_user($uid);
     wp_set_auth_cookie($uid, true);
     wp_send_json_success(['redirect' => ph_url('account')]);
@@ -289,7 +333,7 @@ function ph_payback() {
     $total = (int) get_post_meta($oid, '_ph_total', true);
     if (get_post_meta($oid, '_ph_status', true) === 'پرداخت شد') $back('success', $code);
     if ($status !== 'OK') {
-        update_post_meta($oid, '_ph_status', 'لغو شد');
+        update_post_meta($oid, '_ph_status', 'لغو شده');
         $back('cancelled', $code);
     }
     [$ok, $ref, $pan] = ph_zarin_verify($total, $auth);

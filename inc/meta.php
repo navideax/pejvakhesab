@@ -141,6 +141,10 @@ function ph_ometa_cb($post) {
         'روش ارسال' => $g('_ph_ship'), 'روش پرداخت' => $g('_ph_pay'), 'توضیحات' => $g('_ph_note'),
     ];
     foreach ($rows as $k => $v) echo '<tr><td style="width:140px"><strong>' . esc_html($k) . '</strong></td><td>' . esc_html($v ?: '—') . '</td></tr>';
+    /* ریز محاسبات — سمت سرور محاسبه و ذخیره شده است */
+    echo '<tr><td><strong>جمع کالاها</strong></td><td>' . esc_html(number_format_i18n((int) $g('_ph_subtotal'))) . ' تومان</td></tr>';
+    echo '<tr><td><strong>هزینه ارسال</strong></td><td>' . ((int) $g('_ph_ship_cost') ? esc_html(number_format_i18n((int) $g('_ph_ship_cost'))) . ' تومان' : 'رایگان') . '</td></tr>';
+    echo '<tr><td><strong>تخفیف</strong></td><td>' . ((int) $g('_ph_discount') ? '−' . esc_html(number_format_i18n((int) $g('_ph_discount'))) . ' تومان' : '—') . '</td></tr>';
     echo '<tr><td><strong>اقلام</strong></td><td>';
     if ($items) {
         echo '<ul style="margin:0">';
@@ -155,10 +159,7 @@ function ph_ometa_cb($post) {
     echo '<tr><td><strong>جمع کل</strong></td><td><strong>' . esc_html(number_format_i18n((int) $g('_ph_total'))) . ' تومان</strong></td></tr>';
     echo '</tbody></table>';
     $st = $g('_ph_status') ?: 'در حال پردازش';
-    echo '<p style="margin-top:12px"><label for="_ph_status"><strong>وضعیت سفارش</strong></label> ';
-    echo '<select id="_ph_status" name="_ph_status">';
-    foreach (['در انتظار پرداخت', 'پرداخت شد', 'در حال پردازش', 'تأیید شد', 'ارسال شد', 'تحویل شد', 'لغو شد'] as $o) echo '<option' . selected($st, $o, false) . '>' . esc_html($o) . '</option>';
-    echo '</select></p>';
+    echo '<p style="margin-top:12px;font-size:12px;color:#666">وضعیت فعلی: <strong>' . esc_html($st) . '</strong> — تغییر وضعیت از جعبه «وضعیت سفارش و پیگیری مرسوله» انجام می‌شود.</p>';
 }
 
 function ph_lmeta_cb($post) {
@@ -179,7 +180,6 @@ add_action('save_post', function ($post_id) {
         'ph_brand' => ['_ph_latin'],
         'ph_service' => ['_ph_icon', '_ph_btn_text', '_ph_btn', '_ph_subject'],
         'ph_feature' => ['_ph_icon'],
-        'ph_order' => ['_ph_status'],
     ];
     $keys = $map[get_post_type($post_id)] ?? [];
     $areas = ['_ph_features', '_ph_specs', '_ph_short', '_ph_forwho', '_ph_modules', '_ph_req_min', '_ph_req_srv', '_ph_plans', '_ph_gallery', '_ph_needs', '_ph_prods'];

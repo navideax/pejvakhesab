@@ -3,7 +3,7 @@
 const ICON_MAP = {
   search: 'search', cart: 'shopping-cart', user: 'user', compare: 'git-compare-arrows',
   heart: 'heart', menu: 'menu', x: 'x', phone: 'phone', mail: 'mail', pin: 'map-pin',
-  clock: 'clock', chevDown: 'chevron-down', arrowLeft: 'arrow-left', arrowUp: 'arrow-up',
+  clock: 'clock', chevDown: 'chevron-down', chevLeft: 'chevron-left', chevRight: 'chevron-right', arrowLeft: 'arrow-left', arrowUp: 'arrow-up',
   check: 'check', checkCircle: 'circle-check-big', shield: 'shield-check', truck: 'truck',
   headset: 'headset', wrench: 'wrench', star: 'star', package: 'package', printer: 'printer',
   scan: 'scan-line', tag: 'tag', monitor: 'monitor', archive: 'archive', display: 'tv',

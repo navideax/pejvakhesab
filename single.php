@@ -24,7 +24,7 @@ while (have_posts()) : the_post();
           <span><span data-icon="user"></span><?php the_author(); ?></span>
           <span><span data-icon="cal"></span><?php echo esc_html(get_post_meta(get_the_ID(), '_ph_date', true) ?: ph_fa_date(get_post_time('U'))); ?></span>
           <span><span data-icon="clock"></span>زمان مطالعه: <?php echo esc_html(ph_read_time(get_the_ID())); ?></span>
-          <span><span data-icon="message"></span><?php comments_number('بدون دیدگاه', '۱ دیدگاه', '٪ دیدگاه'); ?></span>
+          <span><span data-icon="message"></span><?php $ph_cn = (int) get_comments_number(); echo $ph_cn === 0 ? 'بدون دیدگاه' : ($ph_cn === 1 ? '۱ دیدگاه' : esc_html(strtr((string) $ph_cn, '0123456789', '۰۱۲۳۴۵۶۷۸۹')) . ' دیدگاه'); ?></span>
         </div>
         <div class="prose"><?php the_content(); ?></div>
         <?php $tags = get_the_tags(); if ($tags) : ?>

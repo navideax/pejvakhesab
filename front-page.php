@@ -14,7 +14,7 @@ get_header();
     <h1 class="hero-title"><?php echo wp_kses_post(ph_opt('ph_hero_title', 'راهکارهای هوشمند برای <span class="hl">حسابداری</span> و <span class="hl">فروشگاه</span> شما')); ?></h1>
     <p class="hero-sub"><?php echo esc_html(ph_opt('ph_hero_sub', 'از نرم‌افزار حسابداری تا تجهیزات فروشگاهی؛ هر آنچه برای مدیریت حرفه‌ای کسب‌وکار خود نیاز دارید، در پژواک حساب.')); ?></p>
     <div class="hero-cta">
-      <a class="btn btn-primary btn-lg" href="<?php echo ph_url('shop'); ?>"><span data-icon="package"></span>مشاهده محصولات</a>
+      <a class="btn btn-primary btn-lg" href="<?php echo esc_url(ph_url('shop')); ?>"><span data-icon="package"></span>مشاهده محصولات</a>
       <button class="btn btn-accent btn-lg" data-consult><span data-icon="headset"></span>دریافت مشاوره رایگان</button>
     </div>
     <ul class="hero-points"><?php $ph_hp = ph_lines(ph_opt('ph_hero_points', '')); if (!$ph_hp) $ph_hp = ['ضمانت اصالت کالا', 'نصب و آموزش', 'پشتیبانی تخصصی']; foreach ($ph_hp as $hp) echo '<li><span data-icon="checkCircle"></span>' . esc_html($hp) . '</li>'; ?></ul>
@@ -52,7 +52,7 @@ foreach ([0, 1, 2] as $i) echo '<div><b class="num" data-count="' . $ph_sc[$i] .
 </div></section>
 <!-- SOFTWARE (SLIDER) -->
 <section class="section soft-sec" id="software"><div class="container">
-  <div class="section-head reveal"><div><span class="eyebrow"><span class="dot"></span><?php echo esc_html(ph_sec('soft', 'eye', 'نرم‌افزارهای حسابداری')); ?></span><h2 class="section-title"><?php echo esc_html(ph_sec('soft', 'title', 'نرم‌افزار حسابداری مناسب کسب‌وکار شما')); ?></h2><p class="section-sub"><?php echo esc_html(ph_sec('soft', 'sub', 'راهکارهای تخصصی برای اصناف مختلف؛ با دمو، آموزش و پشتیبانی واقعی')); ?></p></div><a class="link-more" style="color:var(--accent-bright)" href="<?php echo ph_url('compare'); ?>">مقایسه نرم‌افزارها <span data-icon="arrowLeft"></span></a></div>
+  <div class="section-head reveal"><div><span class="eyebrow"><span class="dot"></span><?php echo esc_html(ph_sec('soft', 'eye', 'نرم‌افزارهای حسابداری')); ?></span><h2 class="section-title"><?php echo esc_html(ph_sec('soft', 'title', 'نرم‌افزار حسابداری مناسب کسب‌وکار شما')); ?></h2><p class="section-sub"><?php echo esc_html(ph_sec('soft', 'sub', 'راهکارهای تخصصی برای اصناف مختلف؛ با دمو، آموزش و پشتیبانی واقعی')); ?></p></div><a class="link-more" style="color:var(--accent-bright)" href="<?php echo esc_url(ph_url('compare')); ?>">مقایسه نرم‌افزارها <span data-icon="arrowLeft"></span></a></div>
   <?php ph_slider_open('softGrid', 'soft-grid', 'ph-slider--dark'); ?>
 </div></section>
 <!-- WIZARD -->
@@ -77,7 +77,7 @@ foreach ([0, 1, 2] as $i) echo '<div><b class="num" data-count="' . $ph_sc[$i] .
 </div></section>
 <!-- HARDWARE -->
 <section class="section section-soft"><div class="container">
-  <div class="section-head reveal"><div><span class="eyebrow"><span class="dot"></span><?php echo esc_html(ph_sec('hw', 'eye', 'تجهیزات فروشگاهی')); ?></span><h2 class="section-title"><?php echo esc_html(ph_sec('hw', 'title', 'تجهیزات حرفه‌ای برای فروش سریع‌تر')); ?></h2><p class="section-sub"><?php echo esc_html(ph_sec('hw', 'sub', 'تجهیزات اصلی با ضمانت شرکتی، تست‌شده و سازگار با نرم‌افزار شما')); ?></p></div><a class="link-more" href="<?php echo ph_url('shop'); ?>">مشاهده همه محصولات <span data-icon="arrowLeft"></span></a></div>
+  <div class="section-head reveal"><div><span class="eyebrow"><span class="dot"></span><?php echo esc_html(ph_sec('hw', 'eye', 'تجهیزات فروشگاهی')); ?></span><h2 class="section-title"><?php echo esc_html(ph_sec('hw', 'title', 'تجهیزات حرفه‌ای برای فروش سریع‌تر')); ?></h2><p class="section-sub"><?php echo esc_html(ph_sec('hw', 'sub', 'تجهیزات اصلی با ضمانت شرکتی، تست‌شده و سازگار با نرم‌افزار شما')); ?></p></div><a class="link-more" href="<?php echo esc_url(ph_url('shop')); ?>">مشاهده همه محصولات <span data-icon="arrowLeft"></span></a></div>
   <div class="p-grid c4" id="hwRail"></div>
 </div></section>
 <!-- READY SYSTEMS -->
@@ -85,7 +85,7 @@ foreach ([0, 1, 2] as $i) echo '<div><b class="num" data-count="' . $ph_sc[$i] .
   <div class="ready-visual reveal"><img src="<?php echo PH_URI; ?>/assets/img/img-ready-system.jpg" alt="سیستم آماده فروشگاهی" loading="lazy"><?php $ph_rm = ph_ready_min(); if ($ph_rm) : ?><div class="ready-price-tag"><span><?php echo esc_html(ph_opt('ph_ready_price_label', 'شروع قیمت سیستم‌های آماده')); ?></span><b class="num"><?php echo esc_html(strtr(number_format($ph_rm), '0123456789,', '۰۱۲۳۴۵۶۷۸۹٬')); ?> تومان</b></div><?php endif; ?></div>
   <div class="reveal"><span class="eyebrow amber"><span class="dot"></span><?php echo esc_html(ph_sec('ready', 'eye', 'سیستم‌های آماده')); ?></span><h2 class="section-title"><?php echo esc_html(ph_sec('ready', 'title', 'سیستم فروشگاهی آماده؛ فقط وصل کنید و شروع کنید')); ?></h2><p class="section-sub"><?php echo esc_html(ph_sec('ready', 'sub', 'یک پکیج کامل، تست‌شده و آماده‌به‌کار؛ بدون دردسر سازگاری و نصب')); ?></p>
     <ul class="ready-list"><?php $ph_rl = ph_pairs(ph_opt('ph_ready_list', '')); if (!$ph_rl) $ph_rl = [['cpu', 'کیس یا Mini PC'], ['monitor', 'مانیتور لمسی'], ['scan', 'بارکدخوان'], ['printer', 'فیش پرینتر'], ['archive', 'کشوی پول'], ['chart', 'نرم‌افزار حسابداری']]; foreach ($ph_rl as [$ri, $rt]) echo '<li><span data-icon="' . esc_attr($ri ?: 'check') . '"></span>' . esc_html($rt) . '</li>'; ?></ul>
-    <div style="display:flex;gap:12px;flex-wrap:wrap"><a class="btn btn-primary btn-lg" href="<?php echo ph_url('shop'); ?>?pcat=ready-systems">مشاهده سیستم‌های آماده</a><button class="btn btn-outline btn-lg" data-consult>مشاوره خرید سیستم</button></div></div>
+    <div style="display:flex;gap:12px;flex-wrap:wrap"><a class="btn btn-primary btn-lg" href="<?php echo esc_url(ph_url('shop')); ?>?pcat=ready-systems">مشاهده سیستم‌های آماده</a><button class="btn btn-outline btn-lg" data-consult>مشاوره خرید سیستم</button></div></div>
 </div></section>
 <?php $ph_sols = get_posts(['post_type' => 'ph_solution', 'numberposts' => 8, 'post_status' => 'publish', 'orderby' => 'menu_order', 'order' => 'ASC']); if ($ph_sols) : ?>
 <!-- SOLUTIONS -->
@@ -138,14 +138,14 @@ foreach ([0, 1, 2] as $i) echo '<div><b class="num" data-count="' . $ph_sc[$i] .
 <?php endif; ?>
 <!-- BLOG -->
 <section class="section"><div class="container">
-  <div class="section-head reveal"><div><span class="eyebrow"><span class="dot"></span><?php echo esc_html(ph_sec('blog', 'eye', 'مجله پژواک حساب')); ?></span><h2 class="section-title"><?php echo esc_html(ph_sec('blog', 'title', 'آموزش و راهنمای خرید')); ?></h2><p class="section-sub"><?php echo esc_html(ph_sec('blog', 'sub', 'مطالب کاربردی برای انتخاب درست نرم‌افزار و تجهیزات')); ?></p></div><a class="link-more" href="<?php echo ph_url('blog'); ?>">همه مقالات <span data-icon="arrowLeft"></span></a></div>
+  <div class="section-head reveal"><div><span class="eyebrow"><span class="dot"></span><?php echo esc_html(ph_sec('blog', 'eye', 'مجله پژواک حساب')); ?></span><h2 class="section-title"><?php echo esc_html(ph_sec('blog', 'title', 'آموزش و راهنمای خرید')); ?></h2><p class="section-sub"><?php echo esc_html(ph_sec('blog', 'sub', 'مطالب کاربردی برای انتخاب درست نرم‌افزار و تجهیزات')); ?></p></div><a class="link-more" href="<?php echo esc_url(ph_url('blog')); ?>">همه مقالات <span data-icon="arrowLeft"></span></a></div>
   <div class="post-grid" id="postRail"></div>
 </div></section>
 <!-- FINAL CTA -->
 <section class="section" style="padding-top:0"><div class="container">
   <div class="final-cta reveal"><h2><?php echo esc_html(ph_opt('ph_cta_title', 'برای کسب‌وکار شما چه راهکاری مناسب است؟')); ?></h2><p><?php echo esc_html(ph_opt('ph_cta_sub', 'اگر برای انتخاب نرم‌افزار یا تجهیزات فروشگاهی مطمئن نیستید، کارشناسان پژواک حساب آماده راهنمایی شما هستند.')); ?></p>
-  <div class="row"><button class="btn btn-accent btn-lg" data-consult><span data-icon="headset"></span>دریافت مشاوره رایگان</button><a class="btn btn-outline-white btn-lg" href="<?php echo ph_url('contact'); ?>"><span data-icon="phone"></span>تماس با کارشناسان</a></div>
-  <div class="final-contact"><a href="tel:<?php echo esc_attr(ph_phone_tel()); ?>"><span data-icon="phone"></span><span class="num"><?php echo esc_html(ph_phone()); ?></span></a><a href="<?php echo ph_url('contact'); ?>"><span data-icon="pin"></span><?php echo esc_html(ph_opt('ph_address_short', 'اردبیل، میدان مادر')); ?></a></div></div>
+  <div class="row"><button class="btn btn-accent btn-lg" data-consult><span data-icon="headset"></span>دریافت مشاوره رایگان</button><a class="btn btn-outline-white btn-lg" href="<?php echo esc_url(ph_url('contact')); ?>"><span data-icon="phone"></span>تماس با کارشناسان</a></div>
+  <div class="final-contact"><a href="tel:<?php echo esc_attr(ph_phone_tel()); ?>"><span data-icon="phone"></span><span class="num"><?php echo esc_html(ph_phone()); ?></span></a><a href="<?php echo esc_url(ph_url('contact')); ?>"><span data-icon="pin"></span><?php echo esc_html(ph_opt('ph_address_short', 'اردبیل، میدان مادر')); ?></a></div></div>
 </div></section>
 </main>
 <?php get_footer();

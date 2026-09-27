@@ -32,12 +32,12 @@ get_header();
   <div class="accordion" id="swFaq"></div>
 </div></section>
 <section class="section"><div class="container">
-  <div class="section-head"><div><h2 class="section-title">سایر نرم‌افزارها</h2></div><a class="link-more" href="<?php echo ph_url('compare'); ?>">مقایسه نرم‌افزارها <span data-icon="arrowLeft"></span></a></div>
+  <div class="section-head"><div><h2 class="section-title">سایر نرم‌افزارها</h2></div><a class="link-more" href="<?php echo esc_url(ph_url('compare')); ?>">مقایسه نرم‌افزارها <span data-icon="arrowLeft"></span></a></div>
   <?php ph_slider_open('swOthers', 'soft-grid c3'); ?>
 </div></section>
 <section class="section" style="padding-top:0"><div class="container">
   <div class="final-cta"><h2><?php echo esc_html(ph_opt('ph_sw_cta_t', 'هنوز مطمئن نیستید؟ دمو ببینید')); ?></h2><p><?php echo esc_html(ph_opt('ph_sw_cta_s', 'جلسه معرفی آنلاین رایگان؛ نرم‌افزار را با سناریوی واقعی کسب‌وکار خودتان ببینید.')); ?></p>
-  <div class="row"><button class="btn btn-accent btn-lg" data-consult><span data-icon="eye"></span>درخواست دمو رایگان</button><a class="btn btn-outline-white btn-lg" href="<?php echo home_url('/'); ?>#wizard"><span data-icon="spark"></span>راهنمای انتخاب نرم‌افزار</a></div></div>
+  <div class="row"><button class="btn btn-accent btn-lg" data-consult><span data-icon="eye"></span>درخواست دمو رایگان</button><a class="btn btn-outline-white btn-lg" href="<?php echo esc_url(home_url('/')); ?>#wizard"><span data-icon="spark"></span>راهنمای انتخاب نرم‌افزار</a></div></div>
 </div></section>
 </main>
 <?php get_footer();

@@ -64,9 +64,13 @@ function ph_otp_request($mobile) {
     if (get_transient('ph_otp_cool_' . $mobile)) return [false, 'cooldown'];
     $count_key = 'ph_otp_count_' . $mobile;
     if ((int) get_transient($count_key) >= 5) return [false, 'too-many'];
+    /* محدودیت بر اساس IP — جلوگیری از بمباران پیامکی شماره‌های مختلف */
+    $ip_key = 'ph_otp_ip_' . md5((string) ($_SERVER['REMOTE_ADDR'] ?? '0'));
+    if ((int) get_transient($ip_key) >= 12) return [false, 'too-many'];
     $code = (string) random_int(10000, 99999);
     set_transient('ph_otp_' . $mobile, ['h' => password_hash($code, PASSWORD_DEFAULT), 'tries' => 0], 10 * MINUTE_IN_SECONDS);
     set_transient($count_key, (int) get_transient($count_key) + 1, HOUR_IN_SECONDS);
+    set_transient($ip_key, (int) get_transient($ip_key) + 1, HOUR_IN_SECONDS);
     if ((int) ph_opt('ph_sms_pattern', 0) > 0) {
         [$ok, $info] = ph_sms_send($mobile, $code, true);
     } else {

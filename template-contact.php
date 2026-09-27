@@ -7,7 +7,7 @@ defined('ABSPATH') || exit;
 get_header();
 ?>
 <main>
-<div class="page-hero"><div class="container"><div class="breadcrumb-lite"><a href="<?php echo home_url('/'); ?>">خانه</a><span>/</span><span><?php the_title(); ?></span></div><h1><?php the_title(); ?></h1><p><?php echo esc_html(get_the_excerpt() ?: 'برای مشاوره، خرید و پشتیبانی در کنار شما هستیم'); ?></p></div></div>
+<div class="page-hero"><div class="container"><div class="breadcrumb-lite"><a href="<?php echo esc_url(home_url('/')); ?>">خانه</a><span>/</span><span><?php the_title(); ?></span></div><h1><?php the_title(); ?></h1><p><?php echo esc_html(get_the_excerpt() ?: 'برای مشاوره، خرید و پشتیبانی در کنار شما هستیم'); ?></p></div></div>
 <div class="section"><div class="container">
 <div class="contact-grid">
   <div class="contact-info">

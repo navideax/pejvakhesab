@@ -7,7 +7,7 @@ defined('ABSPATH') || exit;
 get_header();
 ?>
 <main>
-<div class="page-hero"><div class="container"><div class="breadcrumb-lite"><a href="<?php echo home_url('/'); ?>">خانه</a><span>/</span><span><?php the_title(); ?></span></div><h1><?php the_title(); ?></h1><p><?php echo esc_html(get_the_excerpt() ?: 'سفارش‌ها، علاقه‌مندی‌ها و اطلاعات خود را مدیریت کنید'); ?></p></div></div>
+<div class="page-hero"><div class="container"><div class="breadcrumb-lite"><a href="<?php echo esc_url(home_url('/')); ?>">خانه</a><span>/</span><span><?php the_title(); ?></span></div><h1><?php the_title(); ?></h1><p><?php echo esc_html(get_the_excerpt() ?: 'سفارش‌ها، علاقه‌مندی‌ها و اطلاعات خود را مدیریت کنید'); ?></p></div></div>
 <div class="section"><div class="container">
   <div id="accGuest"<?php if (is_user_logged_in()) echo ' style="display:none"'; ?>><div class="auth-wrap">
     <h2>ورود به حساب کاربری</h2><p>برای مشاهده سفارش‌ها و مدیریت حساب خود وارد شوید.</p>

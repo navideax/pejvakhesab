@@ -7,7 +7,7 @@ defined('ABSPATH') || exit;
 get_header();
 ?>
 <main>
-<div class="page-hero"><div class="container"><div class="breadcrumb-lite"><a href="<?php echo home_url('/'); ?>">خانه</a><span>/</span><span><?php the_title(); ?></span></div><h1><?php the_title(); ?></h1><p><?php echo esc_html(get_the_excerpt() ?: 'از انتخاب تا بهره‌برداری و پشتیبانی بلندمدت؛ یک همراه واقعی برای کسب‌وکار شما'); ?></p></div></div>
+<div class="page-hero"><div class="container"><div class="breadcrumb-lite"><a href="<?php echo esc_url(home_url('/')); ?>">خانه</a><span>/</span><span><?php the_title(); ?></span></div><h1><?php the_title(); ?></h1><p><?php echo esc_html(get_the_excerpt() ?: 'از انتخاب تا بهره‌برداری و پشتیبانی بلندمدت؛ یک همراه واقعی برای کسب‌وکار شما'); ?></p></div></div>
 <section class="section"><div class="container">
 <div class="svc-grid">
   <?php $ph_svcs = get_posts(['post_type' => 'ph_service', 'numberposts' => -1, 'post_status' => 'publish', 'orderby' => 'menu_order', 'order' => 'ASC']); ?>
@@ -16,6 +16,6 @@ get_header();
   <?php endforeach; ?>
 </div></div>
 </div></section>
-<section class="section" style="padding-top:0"><div class="container"><div class="final-cta"><h2><?php echo esc_html(ph_opt('ph_svc_cta_t', 'به کدام خدمت نیاز دارید؟')); ?></h2><p><?php echo esc_html(ph_opt('ph_svc_cta_s', 'درخواست خود را ثبت کنید تا کارشناسان ما با شما تماس بگیرند.')); ?></p><div class="row"><button class="btn btn-accent btn-lg" data-consult><span data-icon="headset"></span>ثبت درخواست خدمت</button><a class="btn btn-outline-white btn-lg" href="<?php echo ph_url('contact'); ?>">تماس با ما</a></div></div></div></section>
+<section class="section" style="padding-top:0"><div class="container"><div class="final-cta"><h2><?php echo esc_html(ph_opt('ph_svc_cta_t', 'به کدام خدمت نیاز دارید؟')); ?></h2><p><?php echo esc_html(ph_opt('ph_svc_cta_s', 'درخواست خود را ثبت کنید تا کارشناسان ما با شما تماس بگیرند.')); ?></p><div class="row"><button class="btn btn-accent btn-lg" data-consult><span data-icon="headset"></span>ثبت درخواست خدمت</button><a class="btn btn-outline-white btn-lg" href="<?php echo esc_url(ph_url('contact')); ?>">تماس با ما</a></div></div></div></section>
 </main>
 <?php get_footer();

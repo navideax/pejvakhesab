@@ -509,8 +509,10 @@ function initCheckout() {
       const randCode = () => 'PH-' + Math.floor(100000 + Math.random() * 900000);
       if (window.PH_WP) {
         $('#coNext').disabled = true;
-        const shipName = document.querySelector('input[name=ship]:checked')?.closest('.radio-card').querySelector('b').textContent || '', payName = document.querySelector('input[name=pay]:checked')?.closest('.radio-card').querySelector('b').textContent || '';
-        phAjax('ph_create_order', { name: $('#fName').value, phone: $('#fPhone').value, province: $('#fProv')?.value || '', city: $('#fCity').value, addr: $('#fAddr').value, postcode: $('#fPostcode')?.value || '', note: $('#fNote')?.value || '', ship: shipName, pay: payName, pay_code: (document.querySelector('input[name=pay]:checked') || {}).value || '', items: JSON.stringify(items.map(i => ({ id: i.id, q: i.q, price: i.price }))), total: grand }).then(res => { $('#coNext').disabled = false; if (res && res.success && res.data && res.data.code) { if (res.data.pay_url) { location.href = res.data.pay_url; return; } finish(res.data.code); } else showToast((res && res.data) || 'خطا در ثبت سفارش؛ لطفاً دوباره تلاش کنید', 'error'); }).catch(() => { $('#coNext').disabled = false; showToast('خطا در ارتباط با سرور', 'error'); });
+        const shipSel = document.querySelector('input[name=ship]:checked');
+        const shipCode = (shipSel && shipSel.dataset.ship) || 'std';
+        const shipName = shipSel?.closest('.radio-card').querySelector('b').textContent || '', payName = document.querySelector('input[name=pay]:checked')?.closest('.radio-card').querySelector('b').textContent || '';
+        phAjax('ph_create_order', { name: $('#fName').value, phone: $('#fPhone').value, province: $('#fProv')?.value || '', city: $('#fCity').value, addr: $('#fAddr').value, postcode: $('#fPostcode')?.value || '', note: $('#fNote')?.value || '', ship: shipName, ship_code: shipCode, coupon: coupon || '', pay: payName, pay_code: (document.querySelector('input[name=pay]:checked') || {}).value || '', items: JSON.stringify(items.map(i => ({ id: i.id, q: i.q, price: i.price }))), total: grand }).then(res => { $('#coNext').disabled = false; if (res && res.success && res.data && res.data.code) { if (res.data.pay_url) { location.href = res.data.pay_url; return; } finish(res.data.code); } else showToast((res && res.data) || 'خطا در ثبت سفارش؛ لطفاً دوباره تلاش کنید', 'error'); }).catch(() => { $('#coNext').disabled = false; showToast('خطا در ارتباط با سرور', 'error'); });
       } else finish(randCode());
     }
   });

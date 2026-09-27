@@ -110,8 +110,10 @@ function ph_pairs($v) {
     return $out;
 }
 
-/* ---------------- JS bridge: links ---------------- */
+/* ---------------- JS bridge: links (cached — ۳ کوئری سنگین را فقط هر ۱۲ ساعت اجرا می‌کند) ---------------- */
 function ph_build_links() {
+    $cached = get_transient('ph_links_cache');
+    if (is_array($cached)) return $cached;
     $L = [
         'home' => home_url('/'), 'shop' => ph_url('shop'), 'compare' => ph_url('compare'),
         'cart' => ph_url('cart'), 'checkout' => ph_url('checkout'), 'account' => ph_url('account'),
@@ -230,7 +232,12 @@ function ph_build_seed() {
     return $seed;
 }
 add_action('save_post', function () { delete_transient('ph_seed_cache'); delete_transient('ph_links_cache'); });
+add_action('deleted_post', function () { delete_transient('ph_seed_cache'); delete_transient('ph_links_cache'); });
 add_action('customize_save_after', function () { delete_transient('ph_seed_cache'); delete_transient('ph_links_cache'); });
+/* تغییر دسته‌بندی‌ها هم کش seed را باطل می‌کند */
+foreach (['created_term', 'edited_term', 'delete_term'] as $ph_term_hook) {
+    add_action($ph_term_hook, function () { delete_transient('ph_seed_cache'); });
+}
 
 /* ---------------- assets ---------------- */
 add_action('wp_enqueue_scripts', function () {
@@ -265,8 +272,13 @@ add_action('wp_enqueue_scripts', function () {
     ]) . ';', 'before');
 
     /* slider config */
+    $ph_clamp = function ($v, $d) { $v = (int) $v; return ($v >= 1 && $v <= 6) ? $v : $d; };
     wp_add_inline_script('ph-slider-boot', 'window.PH_SLIDER_CFG=' . wp_json_encode([
-        'perView' => ['desktop' => 3, 'tablet' => 2, 'mobile' => 1],
+        'perView' => [
+            'desktop' => $ph_clamp(ph_opt('ph_slider_per_desktop', 3), 3),
+            'tablet' => $ph_clamp(ph_opt('ph_slider_per_tablet', 2), 2),
+            'mobile' => $ph_clamp(ph_opt('ph_slider_per_mobile', 1), 1),
+        ],
         'gap' => 20,
         'autoplay' => ph_opt('ph_slider_autoplay', '') === '1',
         'autoplayDelay' => max(2000, (int) ph_opt('ph_slider_delay', 5000)),
